@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subscriptions App</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#e9fce9; text-align:center; }
+    .container { display:none; background:white; padding:20px; margin:50px auto; width:320px; border-radius:15px; box-shadow:0 0 10px rgba(0,0,0,0.2); }
+    input, button { padding:10px; margin:8px; width:90%; border-radius:8px; border:1px solid #ccc; }
+    button { background:green; color:white; cursor:pointer; }
+    button:hover { background:#0a0; }
+    h2 { color:green; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div class="container" id="startScreen" style="display:block;">
+    <h2>Welcome</h2>
+    <p>What do you want to do?</p>
+    <button onclick="showRegister()">Register</button>
+    <button onclick="showLogin()">Login</button>
+  </div>
+
+  <!-- Register Screen -->
+  <div class="container" id="registerScreen">
+    <h2>Register</h2>
+    <input type="text" id="regName" placeholder="Enter Name">
+    <input type="password" id="regPass" placeholder="Enter Password">
+    <input type="text" id="regRef" placeholder="Enter Referral Code" required>
+    <button onclick="register()">Start</button>
+    <p>Make Payment to UPI ID:</p>
+    <p id="upiDisplay">rohan@upi</p>
+    <button onclick="alert('Scan QR / Use UPI app to Pay ₹100 to rohan@upi')">Pay Now</button>
+    <p id="regMsg"></p>
+  </div>
+
+  <!-- Login Screen -->
+  <div class="container" id="loginScreen">
+    <h2>Login</h2>
+    <input type="text" id="logName" placeholder="Enter Name">
+    <input type="password" id="logPass" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+    <p id="logMsg"></p>
+  </div>
+
+  <!-- User Dashboard -->
+  <div class="container" id="dashboard">
+    <h2>User Dashboard</h2>
+    <p id="welcomeUser"></p>
+    <button onclick="generateReferral()">Generate Referral Code</button>
+    <p id="referralList"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="container" id="adminPanel">
+    <h2>Admin Panel</h2>
+    <p>Total Users: <span id="totalUsers">0</span></p>
+    <p>Current UPI ID: <span id="adminUPI">rohan@upi</span></p>
+    <input type="text" id="newUPI" placeholder="Enter new UPI ID">
+    <button onclick="changeUPI()">Update UPI</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+<script>
+  let users = [];
+  let referrals = [];
+  let admin = {name:"Rohan", pass:"Rohan2010", upi:"rohan@upi"};
+
+  function showRegister(){
+    hideAll();
+    document.getElementById("registerScreen").style.display="block";
+  }
+  function showLogin(){
+    hideAll();
+    document.getElementById("loginScreen").style.display="block";
+  }
+  function hideAll(){
+    document.querySelectorAll('.container').forEach(el => el.style.display="none");
+  }
+
+  function register(){
+    let name=document.getElementById("regName").value;
+    let pass=document.getElementById("regPass").value;
+    let ref=document.getElementById("regRef").value;
+    if(!name || !pass || !ref){ 
+      document.getElementById("regMsg").innerText="All fields required!";
+      return;
+    }
+    users.push({name,pass,approved:false});
+    document.getElementById("regMsg").innerText="Registration submitted. Please wait for Admin Approval.";
+    document.getElementById("regName").value="";
+    document.getElementById("regPass").value="";
+    document.getElementById("regRef").value="";
+  }
+
+  function login(){
+    let name=document.getElementById("logName").value;
+    let pass=document.getElementById("logPass").value;
+
+    // Admin Login
+    if(name===admin.name && pass===admin.pass){
+      hideAll();
+      document.getElementById("adminPanel").style.display="block";
+      document.getElementById("totalUsers").innerText=users.length;
+      document.getElementById("adminUPI").innerText=admin.upi;
+      return;
+    }
+
+    // Normal User Login
+    let u=users.find(u=>u.name===name && u.pass===pass);
+    if(u){
+      if(!u.approved){
+        document.getElementById("logMsg").innerText="Not Approved by Admin yet.";
+        return;
+      }
+      hideAll();
+      document.getElementById("dashboard").style.display="block";
+      document.getElementById("welcomeUser").innerText="Welcome, "+u.name;
+      showReferrals(u.name);
+    }else{
+      document.getElementById("logMsg").innerText="Invalid Login";
+    }
+  }
+
+  function generateReferral(){
+    let code="REF"+Math.floor(Math.random()*10000);
+    referrals.push(code);
+    document.getElementById("referralList").innerText="Your Codes: "+referrals.join(", ");
+  }
+
+  function showReferrals(name){
+    document.getElementById("referralList").innerText="Your Codes: "+referrals.join(", ");
+  }
+
+  function changeUPI(){
+    let newupi=document.getElementById("newUPI").value;
+    if(newupi){
+      admin.upi=newupi;
+      document.getElementById("adminUPI").innerText=newupi;
+      document.getElementById("upiDisplay").innerText=newupi;
+      alert("UPI ID updated to "+newupi);
+    }
+  }
+
+  function logout(){
+    hideAll();
+    document.getElementById("startScreen").style.display="block";
+  }
+</script>
+</body>
+</html>
